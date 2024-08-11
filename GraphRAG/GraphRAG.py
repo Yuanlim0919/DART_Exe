@@ -109,35 +109,16 @@ class GraphRAG:
         if task == 'properties':
             properties_extract_chain = properties_extract_prompt | llm
             properties = properties_extract_chain.invoke({'question': query})
-            breakpoint()
             properties = json.loads(properties)
             return properties
         elif task == 'qa':
             qa_chain = qa_prompt | llm
             answer = qa_chain.invoke({'question': query,'knowledge':knowledge})
-            #answer = json.loads(answer)
             return answer
-
-    def collect_subjects(self,d,subject_list=None):
-        if subject_list is None:
-            subject_list = []
-        
-        # Add the value of the current 'subject' key to the list
-        if 'subject' in d and d['subject']:
-            subject_list.append(d['subject'])
-        
-        # Recursively collect 'subject' values from the nested 'object'
-        if 'object' in d and isinstance(d['object'], dict):
-            self.collect_subjects(d['object'], subject_list)
-        
-        subject_list = [item for sublist in subject_list for item in (sublist if isinstance(sublist, list) else [sublist])]
-
-        return subject_list
 
     def query(self,query,doc_id):
         self.graph_store.node_label = doc_id
         properties = self.langchain_call(task='properties',query=query,)
-        #subjects = self.collect_subjects(properties)
         knowledge = self.graph_store.get_rel_map(properties)
         answer = self.langchain_call(query=query,knowledge=knowledge,task='qa')
         return answer
