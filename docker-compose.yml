@@ -1,4 +1,18 @@
+version: '3.8'
+
 services:
+  qdrant:
+    container_name: qdrant
+    image: qdrant/qdrant:latest
+    ports:
+      - 6333:6333
+      - 6334:6334
+    configs:
+      - source: qdrant_config
+        target: /qdrant/config/production.yaml
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+      
   neo4j:
     container_name: neo4j
     image: neo4j:latest
@@ -18,3 +32,7 @@ services:
       - ./neo4j_db/logs:/logs
       - ./neo4j_db/import:/var/lib/neo4j/import
       - ./neo4j_db/plugins:/plugins
+
+configs:
+  qdrant_config:
+    file: ./qdrant_config/production.yaml
